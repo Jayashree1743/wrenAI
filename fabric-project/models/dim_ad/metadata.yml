@@ -1,0 +1,23 @@
+name: dim_ad
+table_reference:
+  catalog: ''
+  schema: dbo
+  table: dim_ad
+primary_key: ad_sk
+columns:
+- name: ad_sk
+  type: INTEGER
+- name: ad_id
+  type: VARCHAR
+- name: adset_sk
+  type: INTEGER
+- name: campaign_sk
+  type: INTEGER
+- name: ad_name
+  type: VARCHAR
+- name: status
+  type: VARCHAR
+- name: effective_status
+  type: VARCHAR
+- name: gold_processed_at
+  type: TIMESTAMP

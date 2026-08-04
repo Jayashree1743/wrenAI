@@ -1,0 +1,41 @@
+name: fact_ad_performance_daily
+table_reference:
+  catalog: ''
+  schema: dbo
+  table: fact_ad_performance_daily
+primary_key: fact_sk
+columns:
+- name: date_key
+  type: INTEGER
+- name: account_sk
+  type: INTEGER
+- name: campaign_sk
+  type: INTEGER
+- name: adset_sk
+  type: INTEGER
+- name: ad_sk
+  type: INTEGER
+- name: impressions
+  type: DOUBLE
+- name: reach
+  type: DOUBLE
+- name: frequency
+  type: DOUBLE
+- name: clicks
+  type: DOUBLE
+- name: unique_clicks
+  type: DOUBLE
+- name: inline_link_clicks
+  type: DOUBLE
+- name: spend_inr
+  type: DOUBLE
+- name: cpc
+  type: DOUBLE
+- name: cpm
+  type: DOUBLE
+- name: ctr
+  type: DOUBLE
+- name: fact_sk
+  type: INTEGER
+- name: gold_processed_at
+  type: TIMESTAMP

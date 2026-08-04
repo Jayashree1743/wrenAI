@@ -1,0 +1,48 @@
+- name: fact_ad_performance_daily_dim_campaign
+  models:
+  - fact_ad_performance_daily
+  - dim_campaign
+  join_type: many_to_one
+  condition: fact_ad_performance_daily.campaign_sk = dim_campaign.campaign_sk
+- name: fact_ad_performance_daily_dim_adset
+  models:
+  - fact_ad_performance_daily
+  - dim_adset
+  join_type: many_to_one
+  condition: fact_ad_performance_daily.adset_sk = dim_adset.adset_sk
+- name: fact_ad_performance_daily_dim_ad
+  models:
+  - fact_ad_performance_daily
+  - dim_ad
+  join_type: many_to_one
+  condition: fact_ad_performance_daily.ad_sk = dim_ad.ad_sk
+- name: fact_ad_performance_daily_dim_account
+  models:
+  - fact_ad_performance_daily
+  - dim_account
+  join_type: many_to_one
+  condition: fact_ad_performance_daily.account_sk = dim_account.account_sk
+- name: fact_ad_performance_daily_dim_date
+  models:
+  - fact_ad_performance_daily
+  - dim_date
+  join_type: many_to_one
+  condition: fact_ad_performance_daily.date_key = dim_date.date_key
+- name: dim_adset_dim_campaign
+  models:
+  - dim_adset
+  - dim_campaign
+  join_type: many_to_one
+  condition: dim_adset.campaign_sk = dim_campaign.campaign_sk
+- name: dim_ad_dim_adset
+  models:
+  - dim_ad
+  - dim_adset
+  join_type: many_to_one
+  condition: dim_ad.adset_sk = dim_adset.adset_sk
+- name: dim_ad_dim_campaign
+  models:
+  - dim_ad
+  - dim_campaign
+  join_type: many_to_one
+  condition: dim_ad.campaign_sk = dim_campaign.campaign_sk

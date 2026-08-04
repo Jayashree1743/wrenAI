@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WrenAI - Campaign Performance Dashboard</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    :root {
+      --bg-gradient-start: hsl(222, 47%, 11%);
+      --bg-gradient-end: hsl(228, 56%, 6%);
+      --card-bg: rgba(17, 24, 39, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: hsl(210, 40%, 98%);
+      --text-muted: hsl(215, 20%, 65%);
+      --primary: hsl(263, 90%, 65%);
+      --primary-glow: rgba(139, 92, 246, 0.15);
+      --accent-cyan: hsl(190, 90%, 50%);
+      --accent-green: hsl(142, 70%, 50%);
+      --accent-pink: hsl(330, 90%, 60%);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 2rem;
+    }
+
+    /* Container */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      font-size: 2rem;
+      color: var(--primary);
+      text-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+    }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, var(--text-main), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-refresh {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+
+    .btn-refresh:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-refresh:active {
+      transform: translateY(0);
+    }
+
+    .btn-refresh i.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-info h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-info .kpi-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .kpi-icon {
+      font-size: 2.25rem;
+      color: var(--accent);
+      opacity: 0.85;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.75rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Visualization Grid */
+    .viz-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .viz-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .viz-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .viz-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .viz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .viz-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .viz-title i {
+      color: var(--primary);
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 350px;
+    }
+
+    /* Table Section */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      width: 300px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .td-number {
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    /* Loading and Status */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 30, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-left-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .loading-text {
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading-overlay active">
+    <div class="spinner"></div>
+    <div class="loading-text">Connecting to Microsoft Fabric SQL Analytics...</div>
+  </div>
+
+  <div class="dashboard-container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <i class="fa-solid fa-wand-magic-sparkles brand-logo"></i>
+        <div>
+          <div class="brand-title">WrenAI Dashboard</div>
+          <div class="brand-subtitle">MS Fabric Data Connection: <span style="color:var(--accent-cyan)">Active</span></div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-refresh" onclick="fetchData()">
+          <i class="fa-solid fa-rotate-right" id="refresh-icon"></i> Refresh Data
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--accent: var(--primary)">
+        <div class="kpi-info">
+          <h3>Total Spend</h3>
+          <div class="kpi-value" id="kpi-spend">₹0.00</div>
+        </div>
+        <i class="fa-solid fa-indian-rupee-sign kpi-icon"></i>
+      </div>
+      <div class="kpi-card" style="--accent: var(--accent-cyan)">
+        <div class="kpi-info">
+          <h3>Total Impressions</h3>
+          <div class="kpi-value" id="kpi-impressions">0</div>
+        </div>
+        <i class="fa-solid fa-eye kpi-icon"></i>
+      </div>
+      <div class="kpi-card" style="--accent: var(--accent-pink)">
+        <div class="kpi-info">
+          <h3>Total Clicks</h3>
+          <div class="kpi-value" id="kpi-clicks">0</div>
+        </div>
+        <i class="fa-solid fa-arrow-pointer kpi-icon"></i>
+      </div>
+      <div class="kpi-card" style="--accent: var(--accent-green)">
+        <div class="kpi-info">
+          <h3>Average CTR</h3>
+          <div class="kpi-value" id="kpi-ctr">0.00%</div>
+        </div>
+        <i class="fa-solid fa-chart-line kpi-icon"></i>
+      </div>
+    </div>
+
+    <!-- Visualization Grid -->
+    <div class="viz-grid">
+      <div class="viz-card">
+        <div class="viz-header">
+          <div class="viz-title">
+            <i class="fa-solid fa-chart-bar"></i> Campaign Spend Breakdown
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="spendChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="viz-card">
+        <div class="viz-header">
+          <div class="viz-title">
+            <i class="fa-solid fa-pie-chart"></i> Spend Share
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="shareChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="viz-title">
+          <i class="fa-solid fa-table-list"></i> Campaign Details
+        </div>
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-input" placeholder="Search campaigns..." onkeyup="filterTable()">
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Campaign Name</th>
+              <th style="text-align: right;">Spend (INR)</th>
+              <th style="text-align: right;">Impressions</th>
+              <th style="text-align: right;">Clicks</th>
+              <th style="text-align: right;">CTR</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let rawData = [];
+    let spendChartInstance = null;
+    let shareChartInstance = null;
+
+    // Fetch data from local server API
+    async function fetchData() {
+      const loadingOverlay = document.getElementById('loading');
+      const refreshIcon = document.getElementById('refresh-icon');
+      
+      loadingOverlay.classList.add('active');
+      refreshIcon.classList.add('spinning');
+      
+      try {
+        const response = await fetch('/api/data');
+        const data = await response.json();
+        
+        if (data.error) {
+          alert("Error fetching data from database:\n" + data.error);
+        } else {
+          rawData = data;
+          updateDashboard();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to connect to local server. Make sure dashboard_server.py is running.");
+      } finally {
+        loadingOverlay.classList.remove('active');
+        refreshIcon.classList.remove('spinning');
+      }
+    }
+
+    function updateDashboard() {
+      // Calculate KPIs
+      let totalSpend = 0;
+      let totalImpressions = 0;
+      let totalClicks = 0;
+
+      rawData.forEach(item => {
+        totalSpend += item.spend;
+        totalImpressions += item.impressions;
+        totalClicks += item.clicks;
+      });
+
+      const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+
+      // Update KPI text
+      document.getElementById('kpi-spend').innerText = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(totalSpend);
+
+      document.getElementById('kpi-impressions').innerText = new Intl.NumberFormat('en-IN').format(totalImpressions);
+      document.getElementById('kpi-clicks').innerText = new Intl.NumberFormat('en-IN').format(totalClicks);
+      document.getElementById('kpi-ctr').innerText = avgCtr.toFixed(2) + '%';
+
+      // Update Table
+      const tableBody = document.getElementById('table-body');
+      tableBody.innerHTML = '';
+
+      rawData.forEach(item => {
+        const ctr = item.impressions > 0 ? (item.clicks / item.impressions) * 100 : 0;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-weight:600;">${item.campaign_name}</td>
+          <td class="td-number" style="text-align: right; font-weight:600; color:var(--accent-cyan);">₹${item.spend.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          <td class="td-number" style="text-align: right;">${item.impressions.toLocaleString('en-IN')}</td>
+          <td class="td-number" style="text-align: right;">${item.clicks.toLocaleString('en-IN')}</td>
+          <td class="td-number" style="text-align: right; font-weight:600; color:var(--accent-green);">${ctr.toFixed(2)}%</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // Update Charts
+      updateCharts();
+    }
+
+    function updateCharts() {
+      // Sort and slice top 8 campaigns for better rendering
+      const sortedData = [...rawData].sort((a, b) => b.spend - a.spend);
+      const topCampaigns = sortedData.slice(0, 8);
+      const otherCampaigns = sortedData.slice(8);
+      
+      const labels = topCampaigns.map(item => item.campaign_name.length > 25 ? item.campaign_name.substring(0, 25) + '...' : item.campaign_name);
+      const spendData = topCampaigns.map(item => item.spend);
+      const impressionsData = topCampaigns.map(item => item.impressions);
+
+      // Add "Others" to Pie Chart if applicable
+      const pieLabels = [...labels];
+      const pieSpendData = [...spendData];
+      if (otherCampaigns.length > 0) {
+        const otherSpendSum = otherCampaigns.reduce((sum, item) => sum + item.spend, 0);
+        pieLabels.push('Other Campaigns');
+        pieSpendData.push(otherSpendSum);
+      }
+
+      // Bar Chart - Spend & Impressions
+      const ctxSpend = document.getElementById('spendChart').getContext('2d');
+      if (spendChartInstance) spendChartInstance.destroy();
+      
+      spendChartInstance = new Chart(ctxSpend, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Spend (INR)',
+              data: spendData,
+              backgroundColor: 'rgba(139, 92, 246, 0.7)',
+              borderColor: 'hsl(263, 90%, 65%)',
+              borderWidth: 2,
+              borderRadius: 8,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Impressions',
+              data: impressionsData,
+              type: 'line',
+              borderColor: 'hsl(190, 90%, 50%)',
+              backgroundColor: 'rgba(6, 182, 212, 0.1)',
+              borderWidth: 3,
+              pointBackgroundColor: 'hsl(190, 90%, 50%)',
+              pointRadius: 4,
+              yAxisID: 'y1',
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: 'hsl(210, 40%, 98%)', font: { family: 'Inter' } }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: 'hsl(215, 20%, 65%)', font: { family: 'Inter' } }
+            },
+            y: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { 
+                color: 'hsl(215, 20%, 65%)',
+                font: { family: 'Inter' },
+                callback: function(value) { return '₹' + value.toLocaleString('en-IN'); }
+              }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { 
+                color: 'hsl(215, 20%, 65%)',
+                font: { family: 'Inter' }
+              }
+            }
+          }
+        }
+      });
+
+      // Pie/Doughnut Chart - Spend Share
+      const ctxShare = document.getElementById('shareChart').getContext('2d');
+      if (shareChartInstance) shareChartInstance.destroy();
+
+      shareChartInstance = new Chart(ctxShare, {
+        type: 'doughnut',
+        data: {
+          labels: pieLabels,
+          datasets: [{
+            data: pieSpendData,
+            backgroundColor: [
+              'rgba(139, 92, 246, 0.8)',
+              'rgba(6, 182, 212, 0.8)',
+              'rgba(244, 63, 94, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(236, 72, 153, 0.8)',
+              'rgba(99, 102, 241, 0.8)',
+              'rgba(107, 114, 128, 0.8)'
+            ],
+            borderColor: 'rgba(17, 24, 39, 0.8)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { 
+                color: 'hsl(210, 40%, 98%)', 
+                font: { family: 'Inter', size: 10 } 
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Filter campaigns in data table
+    function filterTable() {
+      const input = document.getElementById("search-input");
+      const filter = input.value.toUpperCase();
+      const table = document.querySelector("table");
+      const tr = table.getElementsByTagName("tr");
+
+      for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          const txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+      }
+    }
+
+    // Initial Load
+    window.onload = fetchData;
+  </script>
+</body>
+</html>

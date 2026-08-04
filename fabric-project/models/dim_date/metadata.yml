@@ -1,0 +1,25 @@
+name: dim_date
+table_reference:
+  catalog: ''
+  schema: dbo
+  table: dim_date
+primary_key: date_key
+columns:
+- name: date_key
+  type: INTEGER
+- name: full_date
+  type: DATE
+- name: year
+  type: INTEGER
+- name: month
+  type: INTEGER
+- name: day
+  type: INTEGER
+- name: month_name
+  type: VARCHAR
+- name: day_of_week
+  type: INTEGER
+- name: day_name
+  type: VARCHAR
+- name: gold_processed_at
+  type: TIMESTAMP

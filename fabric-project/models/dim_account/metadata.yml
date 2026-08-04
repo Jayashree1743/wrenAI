@@ -1,0 +1,19 @@
+name: dim_account
+table_reference:
+  catalog: ''
+  schema: dbo
+  table: dim_account
+primary_key: account_sk
+columns:
+- name: account_id
+  type: VARCHAR
+- name: account_name
+  type: VARCHAR
+- name: platform
+  type: VARCHAR
+- name: tenant_id
+  type: VARCHAR
+- name: account_sk
+  type: INTEGER
+- name: gold_processed_at
+  type: TIMESTAMP

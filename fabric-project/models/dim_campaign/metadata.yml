@@ -1,0 +1,25 @@
+name: dim_campaign
+table_reference:
+  catalog: ''
+  schema: dbo
+  table: dim_campaign
+primary_key: campaign_sk
+columns:
+- name: campaign_sk
+  type: INTEGER
+- name: campaign_id
+  type: VARCHAR
+- name: account_sk
+  type: INTEGER
+- name: campaign_name
+  type: VARCHAR
+- name: objective
+  type: VARCHAR
+- name: status
+  type: VARCHAR
+- name: daily_budget_inr
+  type: DECIMAL(18, 2)
+- name: budget_remaining_inr
+  type: DECIMAL(18, 2)
+- name: gold_processed_at
+  type: TIMESTAMP
